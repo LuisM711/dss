@@ -1,0 +1,13 @@
+//Para instalar cosas
+npm install sequelize
+npm install typescript ts-node @types/node @types/express
+npm i cors dotenv
+npm install --save-dev @types/sequelize
+npx tsc --init
+npm i @types/cors
+npm i mysql2
+nom i nodemon
+
+
+//Iniciar Servidor
+npm run dev
