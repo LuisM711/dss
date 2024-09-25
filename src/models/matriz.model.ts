@@ -9,7 +9,7 @@ interface matrizAttributes{
     id_proyecto: number,
     id_alternativa: number,
     id_criterio: number,    
-    valor: number
+    valor: number,
 }
 
 //interface matrizCreationAttributes extends Optional<matrizAttributes, 'id'>{}

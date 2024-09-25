@@ -1,8 +1,6 @@
 import { Request, Response } from "express";
-import { handleHttp } from "../utils/error.handle";
 import { proyecto } from "../models/proyectos.model";
 import { alternativas } from "../models/alternativas.model";
-import { error } from "console";
 
 
 //POST Alternativa
