@@ -32,7 +32,7 @@ const postCriterio = async(req: Request, res: Response) => {
             id_proyecto: id_proyecto_parsed,
             nombre: nombre,
             descripcion: descripcion,
-            peso: peso
+            peso:1
         });
 
         return res.status(201).json(newCriterio);
@@ -43,6 +43,39 @@ const postCriterio = async(req: Request, res: Response) => {
     }
 }
 
+
+const updateCriterioPeso = async(req:Request, res:Response)=>{
+    try{
+        const {id_proyecto, peso_criterios } = req.body;
+        console.log(peso_criterios);
+        const id_proyecto_parsed = parseInt(id_proyecto);
+        // Verifica si el proyecto existe
+        const proyectoFound = await proyecto.findByPk(id_proyecto_parsed);
+        if (!proyectoFound) {
+            return res.status(404).json({ message: 'El proyecto no existe' });
+        }        
+        peso_criterios.forEach(async (element: any)=> {
+            const criterioFound = await criterio.findOne({ 
+                where:{
+                    id_proyecto: id_proyecto,
+                    id: element.id
+                }
+            });
+            console.log(element.id);
+            if(!criterioFound){
+                return res.status(500).json({message:'No se pudo'});
+            }
+            if(element.peso>5){
+                return res.status(500).json({message:'Peso invalido'});
+            }
+            criterioFound.peso=element.peso;
+            await criterioFound.save();
+            return res.status(200).json({message:'Peso Actualizado'});
+        });
+    }catch(error){
+        return res.status(500).json({message:'No se pudo'});
+    }
+}
 const getCriterios = async(req:Request, res:Response)=>{
     try{
         //Obtenemos id del proyecto que pertenecera
@@ -130,4 +163,4 @@ const deleteCriterio = async(req:Request, res:Response)=>{
     }
 }
 
-export { postCriterio, getCriterios, updateCriterio, deleteCriterio };
+export { postCriterio, getCriterios, updateCriterio, deleteCriterio, updateCriterioPeso };
