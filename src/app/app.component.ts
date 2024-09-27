@@ -1,13 +1,16 @@
 import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router'; // Importa RouterModule
+import { RouterModule,RouterOutlet } from '@angular/router'; // Importa RouterModule
+import { ProyectoService } from './proyectos/proyecto.service';
+import { HttpClient, HttpClientModule, provideHttpClient,withFetch } from '@angular/common/http';
 import { ProyectosComponent } from './proyectos/proyectos.component';
+
 
 @Component({
   selector: 'app-root',
   standalone: true,
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
-  imports: [ProyectosComponent, RouterModule] // Asegúrate de importar RouterModule
+  imports: [RouterModule] // Asegúrate de importar RouterModule
 })
 export class AppComponent {
   selectOption: string = "";

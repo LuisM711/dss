@@ -26,8 +26,8 @@
             @for(proj of projects;track proj.id) {
                 <tr>
                     <td>{{ proj.id }}</td>
-                    <td>{{ proj.Nombre }}</td>
-                    <td>{{ proj.Descripcion }}</td>
+                    <td>{{ proj.nombre }}</td>
+                    <td>{{ proj.objetivo }}</td>
                     <td><button (click)="seleccionar(proj)">Seleccionar</button></td>
                 </tr>
             }
