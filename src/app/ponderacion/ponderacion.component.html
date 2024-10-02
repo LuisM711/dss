@@ -1,0 +1,54 @@
+<div>
+  <h2>Matriz de Ponderacion de Criterios</h2>
+</div>
+
+<div class="selp">
+  <mat-form-field>
+    <mat-label>Proyectos</mat-label>
+    <mat-select class="selm" (selectionChange)="onSelectionChange($event)">
+      
+      @for (proyecto of proyectos; track proyecto) {
+        <mat-option [value]="proyecto.value">{{proyecto.viewValue}}</mat-option>
+      }
+
+    </mat-select>
+  </mat-form-field>
+</div>
+
+
+
+<div class="deap">
+  <table mat-table [dataSource]="dataSource" class="mat-elevation-z8" *ngIf="showTable">
+
+    <ng-container matColumnDef="header">
+      <th mat-header-cell *matHeaderCellDef> Valoracion de Criterios </th>
+      <td mat-cell *matCellDef="let element"> {{element.header}} </td>
+    </ng-container>
+    
+    
+    <ng-container [matColumnDef]="column" *ngFor="let column of displayedColumns; let colIndex = index">
+      <th mat-header-cell *matHeaderCellDef> {{ column }} </th>
+      <td mat-cell *matCellDef="let element; let rowIndex = index">
+        <mat-select 
+          [(ngModel)]="element[column]" 
+          (selectionChange)="updateOppositeValue(rowIndex, colIndex, $event.value)"
+          [disabled]="rowIndex === colIndex || rowIndex > colIndex"> <!-- Deshabilitar en la diagonal y debajo -->
+          <mat-option *ngFor="let option of options" [value]="option.value">
+            {{ option.viewValue }}
+          </mat-option>
+        </mat-select>
+      </td>
+    </ng-container>
+    
+
+  
+    <tr mat-header-row *matHeaderRowDef="fullColumnList"></tr>
+    <tr mat-row *matRowDef="let row; columns: fullColumnList;"></tr>
+  </table>
+
+  <div class="container">
+    <button class="boton">Guardar Matriz</button>
+  </div>
+
+</div>
+
