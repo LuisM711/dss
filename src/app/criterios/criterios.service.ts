@@ -12,13 +12,17 @@ export class CriteriosService {
 
    // POST: Crear un nuevo criterio
   postCriterio(id_proyecto: number, nombre: string, descripcion: string): Observable<any> {
-    const body = { nombre, descripcion, peso: 1 }; // Puedes ajustar el peso si es necesario
+    const body = {nombre, descripcion, peso: 1 }; // Puedes ajustar el peso si es necesario
     return this.http.post(`${this.apiUrl}/${id_proyecto}`, body);
   }
 
   // GET: Obtener todos los criterios de un proyecto
   getCriterios(id_proyecto: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${id_proyecto}`);
+  }
+
+  getSingleCriterio(id_proyecto: number, id_criterio: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id_proyecto}/${id_criterio}`);
   }
 
   // PUT: Actualizar un criterio por ID
