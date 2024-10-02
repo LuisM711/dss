@@ -99,6 +99,25 @@ const getCriterios = async(req:Request, res:Response)=>{
     }
 }
 
+const getSingleCriterio = async(req:Request, res:Response)=>{
+    try{
+        const {id_proyecto, id_criterio} = req.params
+        const single_criterio = await criterio.findAll({
+            where:{
+                id_proyecto: id_proyecto,
+                id: id_criterio
+            }
+        });
+        if(!single_criterio){
+            return res.status(404).json({message:'Este criterio no existe'});
+        }
+        return res.json(single_criterio);
+    }catch(error){
+        console.error('Error objeniendo el criterio', error);
+        return res.status(500).json({message:'Internal Server Error'});
+    }
+}
+
 const updateCriterio = async(req:Request, res:Response)=>{
     try{
         
@@ -163,4 +182,4 @@ const deleteCriterio = async(req:Request, res:Response)=>{
     }
 }
 
-export { postCriterio, getCriterios, updateCriterio, deleteCriterio, updateCriterioPeso };
+export { postCriterio, getCriterios, updateCriterio, deleteCriterio, updateCriterioPeso, getSingleCriterio };
