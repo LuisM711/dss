@@ -1,1 +1,14 @@
-<p>alternativas works!</p>
+<h2>CRUD de Alternativas</h2>
+<div>
+    <p>ID: <br><input type="number" min="0" [(ngModel)]="alternativasProj.id"></p>
+    <p>ID de Alternativa:<br> <input type="text" [(ngModel)]="alternativasProj.idAlternaitva"></p>
+    <p>Nombre de la alternativa<br> <input type="text" [(ngModel)]="alternativasProj.nombre"></p>
+    <p>Objetivo: <br><textarea rows="10" cols="50" [(ngModel)]="alternativasProj.descripcion">
+    </textarea></p>
+    <p class="botones">
+        <button>Agregar</button>
+        <button>Consultar</button>
+        <button>Modificar</button>
+        <button>Eliminar</button> 
+    </p>
+</div>

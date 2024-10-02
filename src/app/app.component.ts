@@ -5,12 +5,14 @@ import { HttpClient, HttpClientModule, provideHttpClient,withFetch } from '@angu
 import { ProyectosComponent } from './proyectos/proyectos.component';
 
 
+
 @Component({
   selector: 'app-root',
   standalone: true,
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
-  imports: [RouterModule] // Asegúrate de importar RouterModule
+  imports: [ProyectosComponent, RouterModule, HttpClientModule] // Asegúrate de importar RouterModule
+
 })
 export class AppComponent {
   selectOption: string = "";
