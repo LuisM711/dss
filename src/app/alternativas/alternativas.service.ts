@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AppConfig } from '../app-config'; 
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +9,7 @@ import { Observable } from 'rxjs';
 
 export class AlternativasService {
 
-    private apiUrl = 'http://localhost:8500/alternativas';
+    private apiUrl = `${AppConfig.apiUrl}alternativas`;
     constructor(private http: HttpClient) {}
 
     //Crear una nueva alternativa

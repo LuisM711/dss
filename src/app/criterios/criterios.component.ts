@@ -1,137 +1,176 @@
-import { Component } from '@angular/core';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { CriteriosService } from './criterios.service';
+import { ProyectoService } from '../proyectos/proyecto.service';
 
 @Component({
   selector: 'app-criterios',
   standalone: true,
-  imports: [FormsModule],
+  imports: [RouterModule,FormsModule,HttpClientModule],
   templateUrl: './criterios.component.html',
-  styleUrls: ['./criterios.component.css']
+  styleUrl: './criterios.component.css'
 })
-export class CriteriosComponent {
-  projects: any[] = [];
-  crit = {
-    id_proyecto: 0,  // Cambia a 0 para que el usuario deba ingresar el ID del proyecto
-    id: 0,
-    nombre: '',
-    descripcion: ''
-  };
 
-  constructor(private criteriosService: CriteriosService) {
-    this.llenartabla();
-  }
+export class CriteriosComponent implements OnInit {
 
-  llenartabla() {
-    if (this.crit.id_proyecto !== 0) { // Solo cargar proyectos si el ID del proyecto no es 0
-      this.projects = [];
-      this.criteriosService.getCriterios(this.crit.id_proyecto).subscribe(
-        data => {
-          this.projects = data;
+    criterios : any[]=[]
+    proyectos : any[]=[]
+    constructor(private criteriosService: CriteriosService, private proyectoService: ProyectoService) {}
+
+    ngOnInit(){
+      this.llenarTabla();
+      this.cargarProyectos();
+    }
+
+    criteriosProj = {
+      id : 0,
+      idCriterios: 0,
+      nombre: '',
+      descripcion: ''
+    }
+
+    //Mostrar si hay criterios
+    llenarTabla() {
+      const idProyecto = this.criteriosProj.id; // Usamos el id del criterio como idProyecto
+      
+      this.criterios = [];
+      this.criteriosService.getCriterios(idProyecto).subscribe(
+        (data) => {
+          this.criterios = data;
+          console.log(this.criterios);
         },
-        error => {
-          console.error('Error obteniendo criterios', error);
+        (error) => {
+          console.error('Error obteniendo los criterios:', error);
         }
       );
     }
-  }
 
-  hayRegistros() {
-    return this.projects.length > 0;
-  }
+    cargarProyectos() {
+      this.proyectos = [];
 
-  borrar() {
-    if (this.crit.id === 0) {
-      alert('Debe ingresar un ID para poder borrar el criterio');
-      return;
+      this.proyectoService.getProyectos().subscribe(
+        (data) => {
+          this.proyectos = data;
+          console.log(this.proyectos);
+        },
+        (error) => {
+          console.error('Error obteniendo proyectos:', error);
+        }
+      )
     }
-    this.criteriosService.deleteCriterio(this.crit.id_proyecto, this.crit.id).subscribe(
-      response => {
-        alert('Criterio eliminado con éxito');
-        this.llenartabla();
-        this.limpiar();
-      },
-      error => {
-        console.error('Error eliminando criterio', error);
+    
+
+    hayCriterios(){
+      return this.criterios.length>0;
+    }
+
+    seleccionarCriterio(alter:{id_proyecto:number, id:number, nombre:string, descripcion:string}){
+      this.criteriosProj.id = alter.id_proyecto;
+      this.criteriosProj.idCriterios = alter.id;
+      this.criteriosProj.nombre = alter.nombre;
+      this.criteriosProj.descripcion = alter.descripcion;
+      
+    }
+
+    eliminarCriterio(){
+      if(this.criteriosProj.id === 0 && this.criteriosProj.idCriterios === 0){
+        alert('Debe ingresar ambos id para poder borrar el criterio');
+        return;
       }
-    );
-  }
 
-  modificar() {
-    if (this.crit.id === 0) {
-      alert('Debe ingresar un ID para poder modificar el criterio');
+      this.criteriosService.deleteCriterio(this.criteriosProj.id,this.criteriosProj.idCriterios).subscribe()
+      this.llenarTabla()
       return;
     }
-    const criterioEncontrado = this.projects.find(project => project.id === this.crit.id);
-    if (criterioEncontrado) {
-      this.criteriosService.updateCriterio(this.crit.id_proyecto, this.crit.id, this.crit.nombre, this.crit.descripcion).subscribe(
-        response => {
-          alert('Criterio modificado con éxito');
-          this.llenartabla();
-          this.limpiar();
-        },
-        error => {
-          console.error('Error modificando criterio', error);
-        }
-      );
-      return;
-    }
-    alert('No existe un criterio con ese ID');
-  }
 
-  agregar() {
-    for (const element of this.projects) {
-      // Verifica si ya existe un criterio con el mismo id en el mismo proyecto
-      if (element.id === this.crit.id && element.id_proyecto === this.crit.id_proyecto) {
-        alert('Ya existe un criterio con ese ID en este proyecto');
+    modificarCriterio(){
+      if(this.criteriosProj.id === 0){
+        alert('Ingresa un ID para poder modificar el criterio');
+        return;
+      }
+
+      const criterioEncontrada = this.criterios.find(alter => alter.id === this.criteriosProj.idCriterios);
+
+      if (criterioEncontrada) {
+        this.criteriosService.updateCriterio(
+          this.criteriosProj.id,
+          this.criteriosProj.idCriterios,
+          this.criteriosProj.nombre,
+          this.criteriosProj.descripcion).subscribe()
+        this.llenarTabla()
         return;
       }
     }
-    // Utiliza crit.id_proyecto en lugar de una variable fija
-    this.criteriosService.postCriterio(this.crit.id_proyecto, this.crit.nombre, this.crit.descripcion).subscribe(
-      response => {
-        alert('Criterio agregado con éxito');
-        this.llenartabla();
-        this.limpiar();
-      },
-      error => {
-        console.error('Error agregando criterio', error);
-      }
-    );
-  }
 
-  consultar() {
-    if (!this.crit.id || this.crit.id === 0 || this.crit.id_proyecto === 0) {
-      alert("Debe ingresar un ID de proyecto y un ID de criterio para consultar.");
-      return;
+    agregarCriterio() {
+
+    if(!this.criteriosProj.id || !this.criteriosProj.nombre || !this.criteriosProj.descripcion){
+     alert('Debes de llenar todos los campos')
+     return;
+     }
+    console.log('agregarCriterios llamado'); // Para asegurarte que se llama
+    for (const element of this.criterios) {
+        if (element.id == this.criteriosProj.id) {
+            alert('Ya existe un criterio con ese ID');
+            return;
+        }
     }
-    
-    this.criteriosService.getSingleCriterio(this.crit.id_proyecto, this.crit.id).subscribe(
-      criterioEncontrado => {
-        this.crit.nombre = criterioEncontrado[0].nombre; // Ajusta según la estructura de tu respuesta
-        this.crit.descripcion = criterioEncontrado[0].descripcion; // Ajusta según la estructura de tu respuesta
-      },
-      error => {
-        console.error("Error al obtener el criterio", error);
-        alert("Criterio no encontrado o error en la consulta.");
-        this.limpiar(); // Llamar al método limpiar si no se encuentra el criterio
-      }
+    this.criteriosService.postCriterio(
+        this.criteriosProj.id,
+        this.criteriosProj.nombre,
+        this.criteriosProj.descripcion
+    ).subscribe(
+        response => {
+            console.log('Criterio creado con éxito', response);
+            this.llenarTabla();
+            this.limpiar();
+        },
+        error => {
+            console.error('Error creando criterio:', error); // Asegúrate de registrar el error
+            console.error('Detalles del error:', error.message, error.status);
+        }
     );
+}
+
+
+    consultarCriterio(){
+      if(!this.criteriosProj.id || this.criteriosProj.id === 0){
+        alert("Debe ingresar un ID de Proyecto e ID de Criterio para poder consultar el criterio");
+        return;
+      }
+
+      this.criteriosService.getCriterios(this.criteriosProj.id).subscribe(
+        (data) => {
+    
+          if (data.length === 0) {
+            alert("No hay criterios para este ID de Proyecto o el proyecto no existe.");
+          } else {
+            
+            this.criterios = data; 
+            this.criteriosProj.idCriterios = 0;
+            this.criteriosProj.nombre = '';
+            this.criteriosProj.descripcion = '';
+            console.log(this.criterios); 
+          }
+        },
+        (error) => {
+          console.error('Error obteniendo los Criterios:', error);
+          alert("Ocurrió un error al consultar los Criterios. Verifique el ID del proyecto.");
+        }
+      );
+      
+      this.llenarTabla();
   }
 
-  seleccionar(crit: { id_proyecto: number; id: number; nombre: string; descripcion: string }) {
-    this.crit.id_proyecto = crit.id_proyecto;
-    this.crit.id = crit.id;
-    this.crit.nombre = crit.nombre;
-    this.crit.descripcion = crit.descripcion;
-  }
 
-  limpiar() {
-    this.crit = {
-      id_proyecto: 0,  // Reinicia a 0 para que el usuario ingrese nuevamente
-      id: 0,
-      nombre: '',
-      descripcion: ''
-    };
-  }
+    limpiar(){
+      this.criteriosProj.id = 0;
+      this.criteriosProj.idCriterios = 0;
+      this.criteriosProj.nombre = '';
+      this.criteriosProj.descripcion = '';
+    }
+
+
 }

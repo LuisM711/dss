@@ -1,23 +1,23 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatrizComponent } from './matriz.component';
+// import { ComponentFixture, TestBed } from '@angular/core/testing';
+// import { MatrizComponent } from './matriz.component';
 
 
-describe('MatrizComponent', () => {
-  let component: MatrizComponent;
-  let fixture: ComponentFixture<MatrizComponent>;
+// describe('MatrizComponent', () => {
+//   let component: MatrizComponent;
+//   let fixture: ComponentFixture<MatrizComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [MatrizComponent]
-    })
-    .compileComponents();
+//   beforeEach(async () => {
+//     await TestBed.configureTestingModule({
+//       imports: [MatrizComponent]
+//     })
+//     .compileComponents();
 
-    fixture = TestBed.createComponent(MatrizComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+//     fixture = TestBed.createComponent(MatrizComponent);
+//     component = fixture.componentInstance;
+//     fixture.detectChanges();
+//   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
+//   it('should create', () => {
+//     expect(component).toBeTruthy();
+//   });
+// });

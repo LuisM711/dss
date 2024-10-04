@@ -1,8 +1,9 @@
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AlternativasService } from './alternativas.service';
+import { ProyectoService } from '../proyectos/proyecto.service';
 
 @Component({
   selector: 'app-alternativas',
@@ -12,11 +13,15 @@ import { AlternativasService } from './alternativas.service';
   styleUrl: './alternativas.component.css'
 })
 
-export class AlternativasComponent {
+export class AlternativasComponent implements OnInit {
 
     alternativas : any[]=[]
-    constructor(private alternativasService: AlternativasService) {
-      this.llenarTabla()
+    proyectos : any[]=[]
+    constructor(private alternativasService: AlternativasService, private proyectoService: ProyectoService) {}
+
+    ngOnInit(){
+      this.llenarTabla();
+      this.cargarProyectos();
     }
 
     alternativasProj = {
@@ -40,6 +45,20 @@ export class AlternativasComponent {
           console.error('Error obteniendo alternativas:', error);
         }
       );
+    }
+
+    cargarProyectos() {
+      this.proyectos = [];
+
+      this.proyectoService.getProyectos().subscribe(
+        (data) => {
+          this.proyectos = data;
+          console.log(this.proyectos);
+        },
+        (error) => {
+          console.error('Error obteniendo proyectos:', error);
+        }
+      )
     }
     
 
@@ -72,16 +91,25 @@ export class AlternativasComponent {
         return;
       }
 
-      if ((this.alternativas.filter(alter =>alter.id === this.alternativasProj.id)).length>0) {
-        this.alternativasService.updateAlternativa(this.alternativasProj.id,this.alternativasProj.idAlternativa,this.alternativasProj.nombre,this.alternativasProj.descripcion).subscribe()
+      const alternativaEncontrada = this.alternativas.find(alter => alter.id === this.alternativasProj.idAlternativa);
+
+      if (alternativaEncontrada) {
+        this.alternativasService.updateAlternativa(
+          this.alternativasProj.id,
+          this.alternativasProj.idAlternativa,
+          this.alternativasProj.nombre,
+          this.alternativasProj.descripcion).subscribe()
         this.llenarTabla()
         return;
       }
-
-      alert('No existe alternativa con ese ID o que esté asociada al proyecto')
     }
 
     agregarAlternativa() {
+
+    if(!this.alternativasProj.id || !this.alternativasProj.nombre || !this.alternativasProj.descripcion){
+     alert('Debes de llenar todos los campos')
+     return;
+     }
     console.log('agregarAlternativa llamado'); // Para asegurarte que se llama
     for (const element of this.alternativas) {
         if (element.id == this.alternativasProj.id) {
@@ -121,6 +149,9 @@ export class AlternativasComponent {
           } else {
             
             this.alternativas = data; 
+            this.alternativasProj.idAlternativa = 0;
+            this.alternativasProj.nombre = '';
+            this.alternativasProj.descripcion = '';
             console.log(this.alternativas); 
           }
         },

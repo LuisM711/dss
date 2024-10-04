@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AppConfig } from '../app-config'; 
 
 @Injectable({
   providedIn: 'root'
 })
 export class CriteriosService {
-  private apiUrl = 'http://localhost:8500/criterios'; // Cambia esta URL por la del servidor
+  private apiUrl = `${AppConfig.apiUrl}criterios`; // Cambia esta URL por la del servidor
 
   constructor(private http: HttpClient) { }
 

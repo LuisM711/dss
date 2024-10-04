@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AppConfig } from '../app-config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProyectoService {
-  private apiUrl = 'http://localhost:8500/proyecto'; // Cambia esta URL por la del servidor
+  private apiUrl = `${AppConfig.apiUrl}proyecto`; // Cambia esta URL por la del servidor
 
   constructor(private http: HttpClient) {}
 

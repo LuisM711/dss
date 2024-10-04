@@ -1,6 +1,15 @@
 <h2>CRUD de Alternativas</h2>
 <div>
-    <p>ID de proyecto: <br><input type="number" min="0" [(ngModel)]="alternativasProj.id"></p>
+    <p>Nombre de proyecto: 
+        <br>
+        <select [(ngModel)]="alternativasProj.id">
+          <option value="" disabled selected>Selecciona un proyecto</option>
+          @for(proj of proyectos; track alternativasProj.id){
+            <option value="{{ proj.id }}">{{ proj.nombre }}</option>
+          }
+        </select>
+      </p>
+       
     <p>ID de la alternativa: <br><input type="number" min="0" [(ngModel)]="alternativasProj.idAlternativa"></p>
     <p>Nombre de la alternativa<br> <input type="text" [(ngModel)]="alternativasProj.nombre"></p>
     <p>Descripcion de la alternativa: <br><textarea rows="10" cols="50" [(ngModel)]="alternativasProj.descripcion">
@@ -18,8 +27,8 @@
     <table>
         <thead>
             <tr>
-                <th>ID Alternativa</th>
                 <th>ID Proyecto</th>
+                <th>ID Alternativa</th>
                 <th>Nombre</th>
                 <th>Descripción</th>
                 <th>Seleccionar</th>
@@ -28,8 +37,8 @@
         <tbody>
             @for(alter of alternativas;track alter.id) {
                 <tr>
-                    <td>{{ alter.id }}</td>
                     <td>{{ alter.id_proyecto }}</td>
+                    <td>{{ alter.id }}</td>
                     <td>{{ alter.nombre }}</td>
                     <td>{{ alter.descripcion }}</td>
                     <td><button (click)="seleccionarAlternativa(alter)">Seleccionar</button></td>
