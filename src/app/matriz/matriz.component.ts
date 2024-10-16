@@ -40,21 +40,13 @@ import { forkJoin } from 'rxjs';
 
 
  export class MatrizComponent{
-
-  //hacer select de proyectos, que tengan criterios, alternativas y peso de criterios
   proyectos: any[] = [];
   dataSource: any[] = [];
 
-  displayedColumns: string[] = []; // nombre de alternativas
-  fullColumnList: string[] = [];  // Lista completa de columnas, incluyendo la de header
+  displayedColumns: string[] = [];
+  fullColumnList: string[] = [];
   proyectoSeleccionado: number = 0;
-  
-
-  
-  
-  
-
-
+   
   criteriosProj = {
     id : 0,
     idCriterios: 0,
@@ -87,75 +79,115 @@ import { forkJoin } from 'rxjs';
 
 
   onProyectoSeleccionado(proyectoId: number): void {
+    this.errorCargandoAlternativas = false;
+    this.errorCargandoCriterios = false;
     this.generateTable();
   }
+
 
 
   criterios: string[] = [];
   ponderaciones: number[] = [];
   rows: number = 0;
+  errorCargandoCriterios: boolean = false;
+  
+cargarcriterios() {
+  const idProyecto = this.proyectoSeleccionado;
+  this.criterios = [];
+  this.errorCargandoCriterios = false;
 
-  cargarcriterios() {
-    const idProyecto = this.proyectoSeleccionado;
-    this.criterios = [];
-    this.criteriosService.getCriterios(idProyecto).subscribe(
-      (data) => {
+  this.criteriosService.getCriterios(idProyecto).subscribe(
+    (data) => {
+      if (data.length === 0) {
+        this.errorCargandoCriterios = true;
+      } else {
         this.criterios = data;
-        this.displayedColumns = data.map(criterios => criterios.nombre);
-        this.ponderaciones = data.map(criterios => criterios.peso)
+        this.displayedColumns = data.map(criterio => criterio.nombre);
+        this.ponderaciones = data.map(criterio => criterio.peso);
         this.rows = this.displayedColumns.length;
-        console.log("Criterios con pesos",this.displayedColumns);
-        console.log("filas",this.rows);
-      },
-      (error) => {
-        console.error('Error obteniendo los criterios:', error);
+
+        console.log("Criterios con pesos", this.displayedColumns);
+        console.log("Filas", this.rows);
       }
-    );
-  }
+    },
+    (error) => {
+      console.error('Error obteniendo los criterios:', error);
+      this.errorCargandoCriterios = true;
+    }
+  );
+}
 
   alternativas: any[] = [];
   nombresaltenativas: any[] = [];
   id_alternativas: any[] = [];
   columns: number = 0;
-  cargaralternativas() {
-    const idProyecto = this.proyectoSeleccionado;
-    this.alternativas = [];
-    this.alternativasService.getAlternativas(idProyecto).subscribe(
-      (data) => {
-        this.alternativas = data;
-        this.nombresaltenativas = data.map(alternativas => alternativas.nombre)
-        this.columns = this.nombresaltenativas.length;
-        console.log("alternativas",this.nombresaltenativas);
-        console.log("columnas",this.columns);
-      },
-      (error) => {
-        console.error('Error obteniendo alternativas:', error);
-      }
-    );
-  }
 
-  generateTable() {
-    // Wait for both cargaralternativas and cargarcriterios to finish
-    forkJoin([
-      this.alternativasService.getAlternativas(this.proyectoSeleccionado),
-      this.criteriosService.getCriterios(this.proyectoSeleccionado)
-    ]).subscribe(
-      ([alternativasData, criteriosData]) => {
-        // Set alternativas and criterios data
+  errorCargandoAlternativas: boolean = false;
+
+cargaralternativas() {
+  const idProyecto = this.proyectoSeleccionado;
+  this.alternativas = [];
+  this.errorCargandoAlternativas = false;
+
+  this.alternativasService.getAlternativas(idProyecto).subscribe(
+    (data) => {
+      if (data.length === 0) {
+        this.errorCargandoAlternativas = true;
+      } else {
+        this.alternativas = data;
+        this.nombresaltenativas = data.map(alternativa => alternativa.nombre);
+        this.columns = this.nombresaltenativas.length;
+      }
+    },
+    (error) => {
+      console.error('Error obteniendo alternativas:', error);
+      this.errorCargandoAlternativas = true;
+    }
+  );
+
+  console.log('alternativas datos', this.alternativas);
+  console.log("alternativas", this.nombresaltenativas);
+  console.log("columnas", this.columns);
+}
+
+errorCargandoPonderaciones: boolean = false;
+
+generateTable() {
+  forkJoin([
+    this.alternativasService.getAlternativas(this.proyectoSeleccionado),
+    this.criteriosService.getCriterios(this.proyectoSeleccionado)
+  ]).subscribe(
+    ([alternativasData, criteriosData]) => {
+      if (alternativasData.length === 0) {
+        this.errorCargandoAlternativas = true;
+      } else {
+        this.errorCargandoAlternativas = false;
         this.alternativas = alternativasData;
         this.displayedColumns = alternativasData.map(alternativa => alternativa.nombre);
-        this.columns = this.nombresaltenativas.length;
         this.id_alternativas = alternativasData.map(alternativas => alternativas.id);
-        console.log(this.id_alternativas);
+        this.columns = this.displayedColumns.length;
+        console.log('Alternativas:', this.id_alternativas);
+      }
 
-  
+      if (criteriosData.length === 0) {
+        this.errorCargandoCriterios = true;
+      } else {
+        this.errorCargandoCriterios = false;
         this.criterios = criteriosData.map(criterio => criterio.nombre);
-        this.ponderaciones = criteriosData.map(criterio => criterio.peso);
+        this.ponderaciones = criteriosData.map(criterio => criterio.peso || 0);
         this.rows = this.criterios.length;
+        console.log('Criterios:', this.criterios);
+        console.log('Filas:', this.rows);
+        
 
-  
-        console.log(this.rows, this.columns);
-        // Now that rows and columns have been set, generate the table
+        if (this.ponderaciones.every(peso => peso === 0)) {
+          this.errorCargandoPonderaciones = true;
+        } else {
+          this.errorCargandoPonderaciones = false;
+        }
+      }
+
+      if (!this.errorCargandoAlternativas && !this.errorCargandoCriterios) {
         this.fullColumnList = ['header', 'ponderacion', ...this.displayedColumns];
         this.dataSource = Array.from({ length: this.rows }, (_, i) => {
           const row: any = { 
@@ -168,50 +200,64 @@ import { forkJoin } from 'rxjs';
           });
           return row;
         });
-      },
-      (error) => {
-        console.error('Error obteniendo datos:', error);
+        console.log('Tabla generada:', this.dataSource);
       }
-    );
-  }
+    },
+    (error) => {
+      console.error('Error obteniendo datos:', error);
+      this.errorCargandoAlternativas = true;
+      this.errorCargandoCriterios = true;
+    }
+  );
+}
 
 
-columnValues: { [key: string]: number[] } = {}; // Objeto para almacenar valores de cada columna
-
-resultados: { [key: string]: number } = {}; // Objeto para almacenar la suma de cada columna
+columnValues: { [key: string]: number[] } = {};
+resultados: { [key: string]: number } = {};
 
 guardarValores() {
-  // Reinicia los arreglos de valores
-  this.columnValues = {};
-  this.resultados = {}; // Reinicia los resultados
 
-  // Inicializa los resultados a 0
+  this.columnValues = {};
+  this.resultados = {};
+  
   this.displayedColumns.forEach(column => {
-    this.resultados[column] = 0; // Asegúrate de incluir 'ponderacion' si también lo necesitas
+    this.resultados[column] = 0;
   });
   
-  // Recorre dataSource y llena los arreglos
+
   this.dataSource.forEach((element, index) => {
-    // Guarda el valor de ponderación
     if (!this.columnValues['ponderacion']) {
       this.columnValues['ponderacion'] = [];
     }
     this.columnValues['ponderacion'].push(element.ponderacion);
 
-    // Recorre las otras columnas y guarda los valores
     this.displayedColumns.forEach(column => {
       if (!this.columnValues[column]) {
         this.columnValues[column] = [];
       }
       this.columnValues[column].push(element[column]);
-
-      // Multiplica y suma el valor de ponderación con el valor de la columna
       this.resultados[column] += element.ponderacion * element[column];
+      
     });
   });
 
-  // Aquí puedes hacer algo con columnValues y resultados, como imprimirlo
+  const columnas = this.resultados['length'];
+  let proyecto = new Array(columnas).fill(this.proyectoSeleccionado);
   console.log('Valores de columnas:', this.columnValues);
   console.log('Resultados por columna:', this.resultados);
+  console.log('ID de alternativa', this.id_alternativas);
+  console.log('ID de Proyecto',proyecto);
+  
+  console.log('limite');
+  console.log('Resultados por columna:', this.resultados);
+
+  const combinacion = Object.keys(this.resultados).map((key, index) => ({
+    id_alternativa: this.id_alternativas[index],
+    id_proyecto: this.proyectoSeleccionado,
+    resultado: this.resultados[key]
+  }));
+
+  console.log('resultado', combinacion);
+  
 }
 }
