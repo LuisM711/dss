@@ -18,8 +18,20 @@
 
 
 <div class="deap">
-  <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
 
+  <div *ngIf="errorCargandoAlternativas">
+    <p>No existen alternativas para este proyecto.</p>
+  </div>
+  
+  <div *ngIf="errorCargandoCriterios">
+    <p>No existen criterios para este proyecto.</p>
+  </div>
+  
+  <div *ngIf="errorCargandoPonderaciones">
+    <p>No hay ponderaciones disponibles para los criterios.</p>
+  </div>
+
+  <table mat-table [dataSource]="dataSource" class="mat-elevation-z8" *ngIf="!errorCargandoCriterios && !errorCargandoAlternativas">
     <ng-container matColumnDef="header">
       <th mat-header-cell *matHeaderCellDef> Criterios/Alternativas </th>
       <td mat-cell *matCellDef="let element"> {{element.header}} </td>
