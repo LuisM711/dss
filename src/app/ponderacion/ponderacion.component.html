@@ -5,12 +5,11 @@
 <div class="selp">
   <mat-form-field>
     <mat-label>Proyectos</mat-label>
-    <mat-select class="selm" (selectionChange)="onSelectionChange($event)">
-      
-      @for (proyecto of proyectos; track proyecto) {
-        <mat-option [value]="proyecto.value">{{proyecto.viewValue}}</mat-option>
-      }
-
+    <mat-select class="selm" (selectionChange)="onProyectoSeleccionado($event.value)" [(value)]="proyectoSeleccionado">
+      <mat-option [value]="null" disabled>Seleccione un proyecto</mat-option>
+      <mat-option *ngFor="let proyecto of proyectos" [value]="proyecto.id">
+        {{ proyecto.nombre }}
+      </mat-option>
     </mat-select>
   </mat-form-field>
 </div>
@@ -18,7 +17,12 @@
 
 
 <div class="deap">
-  <table mat-table [dataSource]="dataSource" class="mat-elevation-z8" *ngIf="showTable">
+
+  <div *ngIf="errorCargandoCriterios">
+    <p>No existen criterios para este proyecto.</p>
+  </div>
+
+  <table mat-table [dataSource]="dataSource" class="mat-elevation-z8" *ngIf="!errorCargandoCriterios">
 
     <ng-container matColumnDef="header">
       <th mat-header-cell *matHeaderCellDef> Valoracion de Criterios </th>
@@ -32,7 +36,7 @@
         <mat-select 
           [(ngModel)]="element[column]" 
           (selectionChange)="updateOppositeValue(rowIndex, colIndex, $event.value)"
-          [disabled]="rowIndex === colIndex || rowIndex > colIndex"> <!-- Deshabilitar en la diagonal y debajo -->
+          [disabled]="rowIndex === colIndex || rowIndex > colIndex">
           <mat-option *ngFor="let option of options" [value]="option.value">
             {{ option.viewValue }}
           </mat-option>
@@ -47,8 +51,7 @@
   </table>
 
   <div class="container">
-    <button class="boton">Guardar Matriz</button>
+    <button (click)="calcularSumas()" class="boton">Presionar</button>
   </div>
 
 </div>
-
