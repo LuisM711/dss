@@ -7,6 +7,12 @@ import {FormsModule} from '@angular/forms';
 import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
 import {MatFormFieldModule} from '@angular/material/form-field';
+//import
+import { PonderacionService } from './ponderacion.service';
+import { CriteriosService } from '../criterios/criterios.service';
+import { provideHttpClient } from '@angular/common/http';
+import { L } from '@angular/cdk/keycodes';
+import { forkJoin } from 'rxjs';
 
 interface Proyectos {
   value: string;
@@ -23,54 +29,96 @@ interface Proyectos {
 
 export class PonderacionComponent {
   
-  options = [
-    { value: .20, viewValue: '1/5' },
-    { value: .25, viewValue: '1/4' },
-    { value: .33, viewValue: '1/3' },
-    { value: .50, viewValue: '1/2' },
-    { value: 1, viewValue: '1' },
-    { value: 2, viewValue: '2' },
-    { value: 3, viewValue: '3' },
-    { value: 4, viewValue: '4' },
-    { value: 5, viewValue: '5' },
-  ];
-  
-  onSelectionChange(event: any)
-  {
-    this.showTable = !!event.value;
-  }
-  showTable = false;
-  
-  columns = 4;
+  proyectos: any[] = [];
+  proyectoSeleccionado: number = 0;
+  columns = 0;
   dataSource: any[] = [];
-  
-  displayedColumns: string[] = ['Pepe','Pecas','Pica','Papas'];
+  displayedColumns: string[] = [];
   fullColumnList: string[] = [];
-
   criterios: string[] = [];
+  id_criterios: any[] = [];
 
-  constructor() {
-    this.generateTable();
+
+  constructor(private ponderacionService: PonderacionService, private criteriosService: CriteriosService)
+  {
+    this.llenarproyectos();
   }
 
-  generateTable() { 
+  llenarproyectos(){
+    this.proyectos=[]
+    this.ponderacionService.getProyectos().subscribe(
+      (data) => {
+        this.proyectos = data;
+        console.log(this.proyectos)
+      },
+      (error) => {
+        console.error('Error obteniendo proyectos:', error);
+      }
+    );
+  }
+  
+  onProyectoSeleccionado(proyectoId: number): void {
+    this.cargarcriterios();
+  }
+  
+  errorCargandoCriterios: boolean = false;
+  cargarcriterios() {
+    const idProyecto = this.proyectoSeleccionado;
+    this.criterios = [];
+    this.errorCargandoCriterios = false;
+  
+    this.criteriosService.getCriterios(idProyecto).subscribe(
+      (data) => {
+        if (data.length === 0) {
+          this.errorCargandoCriterios = true;
+        } else {
+          this.criterios = data;
+          this.displayedColumns = data.map(criterios => criterios.nombre);
+          this.id_criterios = data.map(criterios => criterios.id);
+          this.generateTable();
+        }
+      },
+      (error) => {
+        console.error('Error obteniendo los criterios:', error);
+        this.errorCargandoCriterios = true;
+      }
+    );
+  }
+
+ 
+  
+
+  generateTable() {
+    this.columns = this.criterios.length;
+    console.log(this.columns);
     this.fullColumnList = ['header', ...this.displayedColumns];
     this.dataSource = Array.from({ length: this.columns }, (_, i) => {
       const row: any = { 
         header: this.displayedColumns[i]
         };
-
         this.displayedColumns.forEach(column => {
-          row[column] = 1; // Establecer valor por defecto
+          row[column] = 1;
         });
 
       return row;
     });
   }
 
+  options = [
+    { value: 5, viewValue: '5' },
+    { value: 4, viewValue: '4' },
+    { value: 3, viewValue: '3' },
+    { value: 2, viewValue: '2' },
+    { value: 1, viewValue: '1' },
+    { value: .50, viewValue: '1/2' },
+    { value: .33, viewValue: '1/3' },
+    { value: .25, viewValue: '1/4' },
+    { value: .20, viewValue: '1/5' },
+  ];
+
   updateOppositeValue(rowIndex: number, colIndex: number, newValue: number) {
-    const oppositeRowIndex = rowIndex;// Índice de fila opuesto
-    const oppositeColIndex = colIndex; // Índice de columna opuesta
+    const oppositeRowIndex = rowIndex;
+    const oppositeColIndex = colIndex;
     
     if (newValue === 5) {
       this.dataSource[oppositeColIndex][this.displayedColumns[oppositeRowIndex]] = 0.20;
@@ -133,11 +181,80 @@ export class PonderacionComponent {
     }
   }
 
-  //valores de select
-  proyectos: Proyectos[] = [
-    {value: '1', viewValue: 'Proyecto 1'},
-    {value: '2', viewValue: 'Proyecto 2'},
-    {value: '3', viewValue: 'Proyecto 3'},
-  ];
 
+  
+
+
+  
+
+  sumasColumnas: number[] = [];
+  operacionesFilas: any[] = [];
+  resultadosFilas: number[] = [];
+
+  calcularSumas() {
+    const sumas: number[] = [];
+    this.displayedColumns.forEach((column) => {
+      if (column !== 'header') {
+        let suma = 0;
+
+        this.dataSource.forEach(row => {
+          suma += row[column] || 0;
+        });
+
+        sumas.push(suma);
+      }
+    });
+
+    this.sumasColumnas = sumas;
+    console.log('Sumas de columnas:', this.sumasColumnas);
+    this.calcularOperacionesFilas();
+  }
+
+  calcularOperacionesFilas() {
+    const operacionesFilas: any[] = [];
+    const resultadosFilas: number[] = [];
+
+    this.dataSource.forEach((row) => {
+      const operacionesFila: any[] = [];
+      let sumaFila = 0;
+      let colIndex = 0;
+
+      this.displayedColumns.forEach((column) => {
+        if (column !== 'header' && this.sumasColumnas[colIndex] > 0) {
+          const valor = row[column];
+          const sumaColumna = this.sumasColumnas[colIndex];
+          const resultadoDivision = valor / sumaColumna;
+          const operacion = `${valor} / ${sumaColumna} = ${resultadoDivision.toFixed(2)}`;
+          operacionesFila.push(operacion);
+          sumaFila += resultadoDivision;
+          colIndex++;
+        }
+      });
+
+      operacionesFilas.push(operacionesFila);
+      resultadosFilas.push(sumaFila);
+    });
+
+    this.operacionesFilas = operacionesFilas;
+    this.resultadosFilas = resultadosFilas;
+    console.log('Operaciones de filas:', this.operacionesFilas);
+    console.log('Resultados sumados por fila:', this.resultadosFilas);
+
+    const x = resultadosFilas.length;
+    console.log(x);
+    const resultadosDivididos = this.resultadosFilas.map((resultado: number) => resultado / x);
+    console.log('Resultados sumados por fila divididos:', resultadosDivididos);
+    const numerosRedondeados = resultadosDivididos.map((numero: number) => Math.round(numero * 10) / 10);
+
+    console.log('ID Criterios', this.id_criterios);
+
+    const resultadosCombinados = this.id_criterios.map((id, index) => {
+    return {
+        id: id,
+        peso: numerosRedondeados[index] * 10
+      };
+    });
+    
+    console.log('Resultados:', resultadosCombinados);
+  }
 }
