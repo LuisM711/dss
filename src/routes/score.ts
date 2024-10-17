@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { score } from "../controllers/score"
+import { getScore, score } from "../controllers/score"
 
 
 const router = Router();
-router.get('/:proyecto_id', score);
+router.post('/:proyecto_id', score);
+router.get('/:proyecto_id', getScore);
 
 
 export{router};

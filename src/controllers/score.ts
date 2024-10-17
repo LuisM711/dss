@@ -59,4 +59,16 @@ const score = async (req: Request, res: Response) => {
     });
 };
 
-export { score };
+const getScore = async(req:Request, res:Response)=>{
+    const {proyecto_id} = req.params;
+    const scoreProyecto = await scoreModel.findAll({
+        where:{
+            id_proyecto: proyecto_id
+        }
+    });
+    if(scoreProyecto.length===0){
+        return res.status(404).json({message:'Este proyecto aun no tiene scores calculados'});
+    }
+    return res.status(200).json(scoreProyecto);
+};
+export { score, getScore };
