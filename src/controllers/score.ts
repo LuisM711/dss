@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { criterio } from '../models/criterios.model';
 import { proyecto } from '../models/proyectos.model';
 import { matriz } from '../models/matriz.model';
+import { scoreModel } from '../models/score.model';
 
 const score = async (req: Request, res: Response) => {
     const {proyecto_id} = req.params;
@@ -38,6 +39,18 @@ const score = async (req: Request, res: Response) => {
             scores[matrizItem.id_alternativa] += weightedValue;
         }
     });
+    //save in scoreModel
+
+
+    const scoreList = Object.keys(scores).map((key) => {
+        return {
+            id_proyecto: parseInt(proyecto_id),
+            id_alternativa: parseInt(key),
+            score: scores[key]
+        };
+    });
+    await scoreModel.bulkCreate(scoreList, { updateOnDuplicate: ['score'] });
+
 
     return res.status(201).json({
         matriz: matrizActual,

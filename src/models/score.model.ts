@@ -43,4 +43,4 @@ score.init({
     tableName:'tb_score',
     timestamps:false,
 });
-export { score };
+export { score as scoreModel };
